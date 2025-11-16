@@ -1,0 +1,129 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-allowed-hostports-containers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allowedHostPorts
+      # expression: >
+      #   [22, 80, 443]
+      expression: >
+        []
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          !has(c.ports) ||
+          c.ports.all(p,
+            !has(p.hostPort) ||
+            p.hostPort == 0 ||
+            variables.allowedHostPorts.exists(h, h == p.hostPort)
+          )
+        )
+      message: >
+        hostPort must be undefined, 0, or in the variables.allowedHostPorts list.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optout-warn
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/allowed-hostports-containers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optin-warn
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-hostports-containers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optout-audit
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/allowed-hostports-containers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optin-audit
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-hostports-containers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optout-deny
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/allowed-hostports-containers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-hostports-containers-namespace-optin-deny
+spec:
+  policyName: check-allowed-hostports-containers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-hostports-containers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

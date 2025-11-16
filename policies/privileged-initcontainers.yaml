@@ -1,0 +1,125 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-privileged-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        (has(object.spec.os) &&
+         has(object.spec.os.name) &&
+         object.spec.os.name.lowerAscii() == "windows") ||
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(c,
+          !has(c.securityContext) ||
+          !has(c.securityContext.privileged) ||
+          c.securityContext.privileged == false
+        )
+      message: >
+        Privileged initContainers are disallowed. All
+        spec.initContainers[*].securityContext.privileged must be undefined or false.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/privileged-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: privileged-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/privileged-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: privileged-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/privileged-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-privileged-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-privileged-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: privileged-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

@@ -1,0 +1,123 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-prestop-httpget-host-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(ic,
+          !has(ic.lifecycle) ||
+          !has(ic.lifecycle.preStop) ||
+          !has(ic.lifecycle.preStop.httpGet) ||
+          !has(ic.lifecycle.preStop.httpGet.host) ||
+          ic.lifecycle.preStop.httpGet.host == ""
+        )
+      message: >
+        spec.initContainers[*].lifecycle.preStop.httpGet.host must be undefined or empty ("").
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/prestop-httpget-host-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: prestop-httpget-host-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/prestop-httpget-host-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: prestop-httpget-host-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/prestop-httpget-host-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-prestop-httpget-host-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-prestop-httpget-host-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: prestop-httpget-host-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

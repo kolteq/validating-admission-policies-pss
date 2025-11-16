@@ -1,0 +1,125 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-capabilities-drop-all-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        (has(object.spec.os) &&
+         has(object.spec.os.name) &&
+         object.spec.os.name.lowerAscii() == "windows") ||
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(ic,
+          has(ic.securityContext) &&
+          has(ic.securityContext.capabilities) &&
+          has(ic.securityContext.capabilities.drop) &&
+          ic.securityContext.capabilities.drop.exists(d, d == "ALL")
+        )
+      message: >
+        spec.initContainers[*].securityContext.capabilities.drop must exist and include "ALL".
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/capabilities-drop-all-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: capabilities-drop-all-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/capabilities-drop-all-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: capabilities-drop-all-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/capabilities-drop-all-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-capabilities-drop-all-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-capabilities-drop-all-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: capabilities-drop-all-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

@@ -1,0 +1,158 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods/ephemeralcontainers"]
+  variables:
+    - name: allowedSeccompTypes
+      expression: >
+        ["RuntimeDefault","Localhost"]
+    - name: podTypePresent
+      expression: >
+        has(object.spec.securityContext) &&
+        has(object.spec.securityContext.seccompProfile) &&
+        has(object.spec.securityContext.seccompProfile.type)
+    - name: podTypeAllowed
+      expression: >
+        variables.podTypePresent &&
+        variables.allowedSeccompTypes.exists(t, t == object.spec.securityContext.seccompProfile.type)
+  validations:
+    - expression: >
+        (has(object.spec.os) &&
+         has(object.spec.os.name) &&
+         object.spec.os.name.lowerAscii() == "windows") ||
+        (variables.podTypeAllowed &&
+         (!has(object.spec.ephemeralContainers) ||
+          object.spec.ephemeralContainers.all(ec,
+            !has(ec.securityContext) ||
+            !has(ec.securityContext.seccompProfile) ||
+            !has(ec.securityContext.seccompProfile.type) ||
+            variables.allowedSeccompTypes.exists(t, t == ec.securityContext.seccompProfile.type)
+          )
+         )
+        )
+        ||
+        (!variables.podTypePresent &&
+         (!has(object.spec.ephemeralContainers) ||
+          object.spec.ephemeralContainers.all(ec,
+            has(ec.securityContext) &&
+            has(ec.securityContext.seccompProfile) &&
+            has(ec.securityContext.seccompProfile.type) &&
+            variables.allowedSeccompTypes.exists(t, t == ec.securityContext.seccompProfile.type)
+          )
+         )
+        )
+      message: >
+        spec.ephemeralContainers[*].securityContext.seccompProfile.type must be "RuntimeDefault" or "Localhost".
+        Ephemeral container fields may be undefined only when the Pod-level spec.securityContext.seccompProfile.type
+        is set to "RuntimeDefault" or "Localhost"; otherwise every ephemeral container must set its own to one of those values.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optout-warn
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-ephemeralcontainers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optin-warn
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-ephemeralcontainers-restricted.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optout-audit
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-ephemeralcontainers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optin-audit
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-ephemeralcontainers-restricted.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optout-deny
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-ephemeralcontainers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-ephemeralcontainers-restricted-namespace-optin-deny
+spec:
+  policyName: check-seccomp-profile-ephemeralcontainers-restricted
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-ephemeralcontainers-restricted.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

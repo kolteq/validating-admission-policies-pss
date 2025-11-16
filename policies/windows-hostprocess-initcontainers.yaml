@@ -1,0 +1,124 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-windows-hostprocess-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(c,
+          !has(c.securityContext) ||
+          !has(c.securityContext.windowsOptions) ||
+          !has(c.securityContext.windowsOptions.hostProcess) ||
+          c.securityContext.windowsOptions.hostProcess == false
+        )
+      message: >
+        HostProcess is not allowed for initContainers. Each
+        spec.initContainers[*].securityContext.windowsOptions.hostProcess
+        must be undefined or set to false.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/windows-hostprocess-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: windows-hostprocess-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/windows-hostprocess-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: windows-hostprocess-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline", "restricted"]
+        - key: validating-admission-policies.kolteq.com/windows-hostprocess-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-windows-hostprocess-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-windows-hostprocess-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: windows-hostprocess-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

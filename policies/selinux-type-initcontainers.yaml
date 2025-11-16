@@ -1,0 +1,127 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-selinux-type-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allowedSELinuxTypes
+      expression: >
+        ["container_t","container_init_t","container_kvm_t","container_engine_t"]
+  validations:
+    - expression: >
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(ic,
+          !has(ic.securityContext) ||
+          !has(ic.securityContext.seLinuxOptions) ||
+          !has(ic.securityContext.seLinuxOptions.type) ||
+          ic.securityContext.seLinuxOptions.type == "" ||
+          variables.allowedSELinuxTypes.exists(t, t == ic.securityContext.seLinuxOptions.type)
+        )
+      message: >
+        spec.initContainers[*].securityContext.seLinuxOptions.type must be undefined, empty (""), or one of: container_t, container_init_t, container_kvm_t, container_engine_t.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/selinux-type-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: selinux-type-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/selinux-type-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: selinux-type-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/selinux-type-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: selinux-type-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

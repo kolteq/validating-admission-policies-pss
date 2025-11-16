@@ -1,0 +1,150 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-seccomp-profile-containers-restricted
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allowedSeccompTypes
+      expression: >
+        ["RuntimeDefault","Localhost"]
+    - name: podTypePresent
+      expression: >
+        has(object.spec.securityContext) &&
+        has(object.spec.securityContext.seccompProfile) &&
+        has(object.spec.securityContext.seccompProfile.type)
+    - name: podTypeAllowed
+      expression: >
+        variables.podTypePresent &&
+        variables.allowedSeccompTypes.exists(t, t == object.spec.securityContext.seccompProfile.type)
+  validations:
+    - expression: >
+        (has(object.spec.os) &&
+         has(object.spec.os.name) &&
+         object.spec.os.name.lowerAscii() == "windows") ||
+        (variables.podTypeAllowed &&
+         object.spec.containers.all(c,
+           !has(c.securityContext) ||
+           !has(c.securityContext.seccompProfile) ||
+           !has(c.securityContext.seccompProfile.type) ||
+           variables.allowedSeccompTypes.exists(t, t == c.securityContext.seccompProfile.type)
+         )
+        )
+        ||
+        (!variables.podTypePresent &&
+         object.spec.containers.all(c,
+           has(c.securityContext) &&
+           has(c.securityContext.seccompProfile) &&
+           has(c.securityContext.seccompProfile.type) &&
+           variables.allowedSeccompTypes.exists(t, t == c.securityContext.seccompProfile.type)
+         )
+        )
+      message: >
+        spec.containers[*].securityContext.seccompProfile.type must be "RuntimeDefault" or "Localhost".
+        Container fields may be undefined only when the Pod-level spec.securityContext.seccompProfile.type
+        is set to "RuntimeDefault" or "Localhost"; otherwise every container must set its own to one of those values.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optout-warn
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-containers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optin-warn
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-containers-restricted.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optout-audit
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-containers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optin-audit
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-containers-restricted.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optout-deny
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["restricted"]
+        - key: validating-admission-policies.kolteq.com/seccomp-profile-containers-restricted
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-seccomp-profile-containers-restricted-namespace-optin-deny
+spec:
+  policyName: check-seccomp-profile-containers-restricted
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: seccomp-profile-containers-restricted.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

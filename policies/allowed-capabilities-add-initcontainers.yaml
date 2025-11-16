@@ -1,0 +1,134 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-allowed-capabilities-add-initcontainers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allowedCaps
+      expression: >
+        ["AUDIT_WRITE","CHOWN","DAC_OVERRIDE","FOWNER","FSETID","KILL",
+         "MKNOD","NET_BIND_SERVICE","SETFCAP","SETGID","SETPCAP","SETUID","SYS_CHROOT"]
+  validations:
+    - expression: >
+        (has(object.spec.os) &&
+         has(object.spec.os.name) &&
+         object.spec.os.name.lowerAscii() == "windows") ||
+        !has(object.spec.initContainers) ||
+        object.spec.initContainers.all(ic,
+          !has(ic.securityContext) ||
+          !has(ic.securityContext.capabilities) ||
+          !has(ic.securityContext.capabilities.add) ||
+          ic.securityContext.capabilities.add.all(cap,
+            variables.allowedCaps.exists(a, a == cap)
+          )
+        )
+      message: >
+        Only the baseline capabilities may be added by initContainers:
+        AUDIT_WRITE, CHOWN, DAC_OVERRIDE, FOWNER, FSETID, KILL, MKNOD,
+        NET_BIND_SERVICE, SETFCAP, SETGID, SETPCAP, SETUID, SYS_CHROOT.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline"]
+        - key: validating-admission-policies.kolteq.com/allowed-capabilities-add-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-capabilities-add-initcontainers.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline"]
+        - key: validating-admission-policies.kolteq.com/allowed-capabilities-add-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-capabilities-add-initcontainers.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline"]
+        - key: validating-admission-policies.kolteq.com/allowed-capabilities-add-initcontainers
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-allowed-capabilities-add-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-allowed-capabilities-add-initcontainers
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: allowed-capabilities-add-initcontainers.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]

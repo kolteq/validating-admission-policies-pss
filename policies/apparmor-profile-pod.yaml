@@ -1,0 +1,123 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-apparmor-profile-pod
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE","UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allowedAppArmorTypes
+      expression: >
+        ["RuntimeDefault","Localhost"]
+  validations:
+    - expression: >
+        !has(object.spec.securityContext) ||
+        !has(object.spec.securityContext.appArmorProfile) ||
+        !has(object.spec.securityContext.appArmorProfile.type) ||
+        variables.allowedAppArmorTypes.exists(t, t == object.spec.securityContext.appArmorProfile.type)
+      message: >
+        spec.securityContext.appArmorProfile.type must be undefined, RuntimeDefault, or Localhost.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optout-warn
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/apparmor-profile-pod
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optin-warn
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: apparmor-profile-pod.validating-admission-policies.kolteq.com/warn
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optout-audit
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/apparmor-profile-pod
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optin-audit
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: apparmor-profile-pod.validating-admission-policies.kolteq.com/audit
+          operator: In
+          values: ["true"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optout-deny
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["baseline","restricted"]
+        - key: validating-admission-policies.kolteq.com/apparmor-profile-pod
+          operator: NotIn
+          values: ["false"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-apparmor-profile-pod-namespace-optin-deny
+spec:
+  policyName: check-apparmor-profile-pod
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+        - key: apparmor-profile-pod.validating-admission-policies.kolteq.com/enforce
+          operator: In
+          values: ["true"]
