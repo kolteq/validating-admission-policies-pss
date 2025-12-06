@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: payments
   labels:
-    validating-admission-policies.kolteq.com/enforce: restricted
-    validating-admission-policies.kolteq.com/privileged-containers: "false"
-    validating-admission-policies.kolteq.com/allowed-hostports-containers: "false"
+    pss.kolteq.com/enforce: restricted
+    privileged-containers.pss.kolteq.com/enforce: "false"
+    allowed-hostports-containers.pss.kolteq.com/enforce: "false"

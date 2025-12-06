@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: staging
   labels:
-    validating-admission-policies.kolteq.com/audit: restricted
-    validating-admission-policies.kolteq.com/run-as-user-pod: "false"
-    seccomp-profile-pod.validating-admission-policies.kolteq.com/warn: "true"
+    pss.kolteq.com/audit: restricted
+    run-as-user-pod.pss.kolteq.com/audit: "false"
+    seccomp-profile-pod.pss.kolteq.com/warn: "true"
