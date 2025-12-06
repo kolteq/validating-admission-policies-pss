@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: ci-tools
   labels:
-    seccomp-profile-pod.validating-admission-policies.kolteq.com/warn: "true"
-    run-as-nonroot-containers.validating-admission-policies.kolteq.com/audit: "true"
-    allow-privilege-escalation-containers.validating-admission-policies.kolteq.com/enforce: "true"
+    seccomp-profile-pod.pss.kolteq.com/warn: "true"
+    run-as-nonroot-containers.pss.kolteq.com/audit: "true"
+    allow-privilege-escalation-containers.pss.kolteq.com/enforce: "true"

@@ -1,0 +1,110 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optout-warn
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/warn
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostipc.pss.kolteq.com/warn
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optin-warn
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostipc.pss.kolteq.com/warn
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optout-audit
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/audit
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostipc.pss.kolteq.com/audit
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optin-audit
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostipc.pss.kolteq.com/audit
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optout-deny
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/enforce
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostipc.pss.kolteq.com/enforce
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostipc-namespace-optin-deny
+spec:
+  policyName: check-hostipc
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostipc.pss.kolteq.com/enforce
+        operator: In
+        values:
+        - 'true'

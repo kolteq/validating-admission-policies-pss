@@ -1,0 +1,110 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optout-warn
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/warn
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostnetwork.pss.kolteq.com/warn
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optin-warn
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostnetwork.pss.kolteq.com/warn
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optout-audit
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/audit
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostnetwork.pss.kolteq.com/audit
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optin-audit
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostnetwork.pss.kolteq.com/audit
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optout-deny
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.kolteq.com/enforce
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: hostnetwork.pss.kolteq.com/enforce
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-hostnetwork-namespace-optin-deny
+spec:
+  policyName: check-hostnetwork
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: hostnetwork.pss.kolteq.com/enforce
+        operator: In
+        values:
+        - 'true'
