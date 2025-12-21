@@ -1,0 +1,4 @@
+securityContext:
+  capabilities:
+    add:
+    - SYS_ADMIN

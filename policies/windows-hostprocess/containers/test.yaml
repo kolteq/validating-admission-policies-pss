@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: windows-hostprocess-containers
+  namespace: policy-test
+spec:
+  hostNetwork: true
+  containers:
+  - name: main
+    image: busybox:1.36
+    command:
+    - sh
+    - -c
+    - sleep 3600
+    securityContext:
+      windowsOptions:
+        hostProcess: true
+  os:
+    name: windows

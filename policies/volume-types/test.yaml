@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-types-pod
+  namespace: policy-test
+spec:
+  containers:
+  - name: main
+    image: busybox:1.36
+    command:
+    - sh
+    - -c
+    - sleep 3600
+    volumeMounts:
+    - name: repo
+      mountPath: /repo
+  volumes:
+  - name: repo
+    gitRepo:
+      repository: https://github.com/kubernetes/kubernetes.git
