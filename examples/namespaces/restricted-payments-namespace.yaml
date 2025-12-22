@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: payments
-  labels:
-    pss.security.kolteq.com/enforce: restricted
-    privileged-containers.pss.security.kolteq.com/enforce: "false"
-    allowed-hostports-containers.pss.security.kolteq.com/enforce: "false"
