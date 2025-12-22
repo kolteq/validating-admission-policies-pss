@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: capabilities-add-netbindservice-ephemeralcontainers
+  namespace: policy-test
+spec:
+  containers:
+  - name: main
+    image: busybox:1.36
+    command:
+    - sh
+    - -c
+    - sleep 3600
+---
+# Command: kubectl debug -n policy-test capabilities-add-netbindservice-ephemeralcontainers -it --image=busybox:1.36 --custom=policies/capabilities-add-netbindservice/ephemeralcontainers/test-kubectl-debug-custom.yaml

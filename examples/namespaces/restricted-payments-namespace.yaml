@@ -3,6 +3,6 @@ kind: Namespace
 metadata:
   name: payments
   labels:
-    pss.kolteq.com/enforce: restricted
-    privileged-containers.pss.kolteq.com/enforce: "false"
-    allowed-hostports-containers.pss.kolteq.com/enforce: "false"
+    pss.security.kolteq.com/enforce: restricted
+    privileged-containers.pss.security.kolteq.com/enforce: "false"
+    allowed-hostports-containers.pss.security.kolteq.com/enforce: "false"

@@ -1,0 +1,110 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-warn
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.security.kolteq.com/warn
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/warn
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-warn
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Warn
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/warn
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-audit
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.security.kolteq.com/audit
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/audit
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-audit
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Audit
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/audit
+        operator: In
+        values:
+        - 'true'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optout-deny
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: pss.security.kolteq.com/enforce
+        operator: In
+        values:
+        - baseline
+        - restricted
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/enforce
+        operator: NotIn
+        values:
+        - 'false'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: check-selinux-type-initcontainers-namespace-optin-deny
+spec:
+  policyName: check-selinux-type-initcontainers
+  validationActions:
+  - Deny
+  matchResources:
+    namespaceSelector:
+      matchExpressions:
+      - key: selinux-type-initcontainers.pss.security.kolteq.com/enforce
+        operator: In
+        values:
+        - 'true'

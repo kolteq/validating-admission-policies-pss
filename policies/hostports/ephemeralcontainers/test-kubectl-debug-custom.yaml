@@ -1,0 +1,3 @@
+ports:
+- containerPort: 8080
+  hostPort: 30001

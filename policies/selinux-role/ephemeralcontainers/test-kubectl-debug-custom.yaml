@@ -1,0 +1,3 @@
+securityContext:
+  seLinuxOptions:
+    role: role_r

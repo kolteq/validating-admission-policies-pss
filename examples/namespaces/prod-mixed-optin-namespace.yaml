@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: prod-ml
   labels:
-    pss.kolteq.com/enforce: restricted
-    hostnetwork.pss.kolteq.com/enforce: "true"
-    privileged-containers.pss.kolteq.com/enforce: "true"
-    allowed-sysctls.pss.kolteq.com/warn: "true"
+    pss.security.kolteq.com/enforce: restricted
+    hostnetwork.pss.security.kolteq.com/enforce: "true"
+    privileged-containers.pss.security.kolteq.com/enforce: "true"
+    allowed-sysctls.pss.security.kolteq.com/warn: "true"

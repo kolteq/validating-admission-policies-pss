@@ -1,0 +1,4 @@
+securityContext:
+  capabilities:
+    drop:
+    - NET_RAW

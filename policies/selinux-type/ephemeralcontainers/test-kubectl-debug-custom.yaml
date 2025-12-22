@@ -1,0 +1,3 @@
+securityContext:
+  seLinuxOptions:
+    type: type_t

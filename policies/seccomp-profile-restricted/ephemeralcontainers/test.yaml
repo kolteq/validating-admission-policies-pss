@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seccomp-profile-restricted-ephemeralcontainers
+  namespace: policy-test
+spec:
+  containers:
+  - name: main
+    image: busybox:1.36
+    command:
+    - sh
+    - -c
+    - sleep 3600
+---
+# Command: kubectl debug -n policy-test seccomp-profile-restricted-ephemeralcontainers -it --image=busybox:1.36 --custom=policies/seccomp-profile-restricted/ephemeralcontainers/test-kubectl-debug-custom.yaml

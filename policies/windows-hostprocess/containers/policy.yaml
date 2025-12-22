@@ -1,0 +1,22 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: check-windows-hostprocess-containers
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          !has(c.securityContext) ||
+          !has(c.securityContext.windowsOptions) ||
+          !has(c.securityContext.windowsOptions.hostProcess) ||
+          c.securityContext.windowsOptions.hostProcess == false
+        )
+      message: >
+        HostProcess is not allowed for containers. Each spec.containers[*].securityContext.windowsOptions.hostProcess must be undefined or set to false.

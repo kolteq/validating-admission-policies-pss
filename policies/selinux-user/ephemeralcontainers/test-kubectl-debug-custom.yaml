@@ -1,0 +1,3 @@
+securityContext:
+  seLinuxOptions:
+    user: user_u
