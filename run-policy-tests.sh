@@ -63,7 +63,7 @@ while IFS= read -r policy; do
     break
   fi
 
-  sleep 3
+  sleep 2
   set +e
   if [[ -n "${command_line}" ]]; then
     echo "Applying test manifest..."
