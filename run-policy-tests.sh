@@ -63,7 +63,7 @@ while IFS= read -r policy; do
     break
   fi
 
-  sleep 2 # Give the API server a moment to register the new policy
+  sleep 3
   set +e
   if [[ -n "${command_line}" ]]; then
     echo "Applying test manifest..."
@@ -96,7 +96,6 @@ while IFS= read -r policy; do
     PASSED=$((PASSED + 1))
   fi
 
-  # Clean up applied binding/policy to avoid conflicts in later iterations
   if [[ -n "${command_line}" ]]; then
     kubectl delete -f "$use_example"
   fi
