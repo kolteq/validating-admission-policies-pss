@@ -16,9 +16,9 @@ kind: Namespace
 metadata:
   name: policy-test
   labels:
-    pss.kolteq.com/enforce: restricted
-    pss.kolteq.com/audit: restricted
-    pss.kolteq.com/warn: restricted
+    pss.security.kolteq.com/enforce: restricted
+    pss.security.kolteq.com/audit: restricted
+    pss.security.kolteq.com/warn: restricted
 EOF
 
 while IFS= read -r policy; do

@@ -9,11 +9,11 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: pss.kolteq.com/warn
+      - key: pss.security.kolteq.com/warn
         operator: In
         values:
         - restricted
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/warn
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/warn
         operator: NotIn
         values:
         - 'false'
@@ -29,7 +29,7 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/warn
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/warn
         operator: In
         values:
         - 'true'
@@ -45,11 +45,11 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: pss.kolteq.com/audit
+      - key: pss.security.kolteq.com/audit
         operator: In
         values:
         - restricted
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/audit
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/audit
         operator: NotIn
         values:
         - 'false'
@@ -65,7 +65,7 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/audit
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/audit
         operator: In
         values:
         - 'true'
@@ -81,11 +81,11 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: pss.kolteq.com/enforce
+      - key: pss.security.kolteq.com/enforce
         operator: In
         values:
         - restricted
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/enforce
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/enforce
         operator: NotIn
         values:
         - 'false'
@@ -101,7 +101,7 @@ spec:
   matchResources:
     namespaceSelector:
       matchExpressions:
-      - key: allow-privilege-escalation-initcontainers.pss.kolteq.com/enforce
+      - key: allow-privilege-escalation-initcontainers.pss.security.kolteq.com/enforce
         operator: In
         values:
         - 'true'
