@@ -53,7 +53,7 @@ metadata:
 
 ## Commercial support
 
-For commercial support, reach out to [KolTEQ](https://www.kolteq.com/)!
+For commercial support, reach out to [KolTEQ](https://kolteq.com/)!
 
 ## Example namespaces
 
