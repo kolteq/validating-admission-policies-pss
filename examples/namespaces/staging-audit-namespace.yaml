@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: staging
-  labels:
-    pss.security.kolteq.com/audit: restricted
-    run-as-user-pod.pss.security.kolteq.com/audit: "false"
-    seccomp-profile-pod.pss.security.kolteq.com/warn: "true"

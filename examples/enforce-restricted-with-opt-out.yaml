@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: enforce-restricted-with-opt-out-namespace
+  labels:
+    pss.security.kolteq.com/enforce: restricted
+    hostpid.pss.security.kolteq.com/enforce: 'false'
