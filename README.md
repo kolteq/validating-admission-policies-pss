@@ -1,3 +1,8 @@
+# ARCHIVE
+
+Updates will be made in https://github.com/kolteq/kubernetes-security-policies !
+
+---
 # Kubernetes Pod Security Standards via Validating Admission Policies
 
 This directory contains standalone `ValidatingAdmissionPolicy` objects and their corresponding bindings following the [Kubernetes Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/). You can choose to use `warn`/`audit`/`enforce` modes on the `baseline` or `restricted` policy sets, or pick and choose individual policies to enforce or monitor in specific namespaces.
